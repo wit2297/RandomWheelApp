@@ -6,17 +6,13 @@ import time
 # Function to create the wheel chart
 def create_wheel(entries, highlight=None):
     fig, ax = plt.subplots(figsize=(6, 6))
-    wedges, texts = ax.pie(
+    wedges, _ = ax.pie(
         [1] * len(entries), labels=entries, startangle=90, colors=plt.cm.Paired.colors
     )
-
-    # Highlight the selected item
     if highlight is not None:
-        for i, wedge in enumerate(wedges):
-            if i == highlight:
-                wedge.set_edgecolor("black")
-                wedge.set_linewidth(3)
-
+        # Highlight the selected wedge
+        wedges[highlight].set_edgecolor("black")
+        wedges[highlight].set_linewidth(3)
     ax.set_aspect("equal")
     return fig
 
@@ -31,6 +27,7 @@ entries = [e.strip() for e in entries if e.strip()]
 # Show the wheel
 if entries:
     st.subheader("Your Wheel")
+    placeholder = st.empty()  # Placeholder for the spinning animation
     st.pyplot(create_wheel(entries))
 
     # Spin the wheel button
@@ -39,13 +36,13 @@ if entries:
         spin_index = random.randint(0, len(entries) - 1)
 
         # Simulate spinning animation
-        for i in range(20):  # Number of "spins"
+        for i in range(30):  # Number of "spins"
             current_index = (spin_index + i) % len(entries)
             fig = create_wheel(entries, highlight=current_index)
-            st.pyplot(fig)
-            time.sleep(0.1)  # Delay between spins
+            placeholder.pyplot(fig)  # Update the placeholder with the new frame
+            time.sleep(0.1)  # Delay between frames
 
-        # Show the result
+        # Show the final result
         selected_item = entries[spin_index]
         st.success(f"🎉 The wheel landed on: **{selected_item}** 🎉")
 else:
