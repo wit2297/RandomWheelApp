@@ -4,24 +4,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-# Function to create the wheel chart with rotation
+# Function to create the wheel chart with rotation and labels inside
 def create_wheel(entries, angle=0):
     fig, ax = plt.subplots(figsize=(6, 6))
 
     # Create the pie chart
     wedges, texts = ax.pie(
         [1] * len(entries),
-        labels=entries,
         startangle=angle,
         counterclock=False,
         colors=plt.cm.Paired.colors,
     )
 
+    # Add labels inside the wheel
+    for i, wedge in enumerate(wedges):
+        angle = (wedge.theta2 + wedge.theta1) / 2
+        x = 0.7 * np.cos(np.radians(angle))  # Position x
+        y = 0.7 * np.sin(np.radians(angle))  # Position y
+        ax.text(x, y, entries[i], ha="center", va="center", fontsize=12, color="white")
+
+    # Draw a fixed pointer at the top
+    ax.plot([0, 0], [1.2, 0.8], color="black", linewidth=3)  # Pointer line
+    ax.scatter(0, 1.2, color="red", s=100, zorder=10)  # Pointer dot
+
     ax.set_aspect("equal")
     return fig
 
 # App title
-st.title("🎡 Realistic Random Wheel Spinner")
+st.title("🎡 Enhanced Random Wheel Spinner")
 
 # Sidebar: User input for entries
 st.sidebar.header("Entries")
@@ -53,7 +63,7 @@ if entries:
             current_angle = (final_angle / spin_steps) * step
             fig = create_wheel(entries, angle=current_angle)
             placeholder.pyplot(fig)
-            time.sleep(0.05)  # Speed of the animation
+            time.sleep(max(0.03, 0.1 * (step / spin_steps)))
 
         # Calculate the selected entry based on the stopping angle
         slice_angle = 360 / total_entries  # Angle per slice
