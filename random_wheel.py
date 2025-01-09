@@ -1,23 +1,27 @@
 import streamlit as st
 import random
 import matplotlib.pyplot as plt
+import numpy as np
 import time
 
-# Function to create the wheel chart
-def create_wheel(entries, highlight_index=None):
-    fig, ax = plt.subplots(figsize=(5, 5))
-    wedges, _ = ax.pie(
-        [1] * len(entries), labels=entries, startangle=90, colors=plt.cm.Paired.colors
+# Function to create the wheel chart with rotation
+def create_wheel(entries, angle=0):
+    fig, ax = plt.subplots(figsize=(6, 6))
+
+    # Create the pie chart
+    wedges, texts = ax.pie(
+        [1] * len(entries),
+        labels=entries,
+        startangle=angle,
+        counterclock=False,
+        colors=plt.cm.Paired.colors,
     )
-    if highlight_index is not None:
-        # Highlight the selected wedge
-        wedges[highlight_index].set_edgecolor("black")
-        wedges[highlight_index].set_linewidth(3)
+
     ax.set_aspect("equal")
     return fig
 
 # App title
-st.title("🎡 Random Wheel Spinner")
+st.title("🎡 Realistic Random Wheel Spinner")
 
 # Sidebar: User input for entries
 st.sidebar.header("Entries")
@@ -36,25 +40,27 @@ if entries:
     # Button to spin the wheel
     if st.button("Spin the Wheel!"):
         st.subheader("🎰 Spinning the Wheel...")
+        total_entries = len(entries)
 
-        # Simulate the spinning animation
-        total_spins = 20  # Total frames in the spin
-        spin_index = random.randint(0, len(entries) - 1)  # Random final position
-        slowing_factor = 1.02  # Gradual slowing
+        # Simulate spinning animation with rotation
+        total_rotations = random.randint(5, 10) * 360  # Number of full rotations
+        stopping_angle = random.randint(0, 360)  # Final stopping angle
+        final_angle = total_rotations + stopping_angle  # Total rotation angle
+        spin_steps = 50  # Number of steps in the animation
 
-        for i in range(total_spins):
-            # Calculate the current index for spinning
-            current_index = (spin_index + i) % len(entries)
-
-            # Update the wheel with the current highlight
-            fig = create_wheel(entries, highlight_index=current_index)
+        for step in range(spin_steps):
+            # Calculate the current angle
+            current_angle = (final_angle / spin_steps) * step
+            fig = create_wheel(entries, angle=current_angle)
             placeholder.pyplot(fig)
+            time.sleep(0.05)  # Speed of the animation
 
-            # Adjust sleep time for smooth slowing
-            time.sleep(max(0.05, 0.1 * (i / total_spins)))
+        # Calculate the selected entry based on the stopping angle
+        slice_angle = 360 / total_entries  # Angle per slice
+        selected_index = (total_entries - int(stopping_angle // slice_angle)) % total_entries
+        selected_item = entries[selected_index]
 
         # Show the final result
-        selected_item = entries[spin_index]
         st.success(f"🎉 The wheel landed on: **{selected_item}** 🎉")
 else:
     st.warning("Please add some entries in the sidebar to create the wheel.")
